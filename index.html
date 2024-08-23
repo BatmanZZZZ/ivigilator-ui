@@ -16,24 +16,19 @@
         .container {
             display: flex;
             width: 100%;
-            max-width: 1200px; /* Set a max width for the container */
+            max-width: 1200px;
         }
         .video-container, .image-container {
-            flex: 1; /* Allow both containers to take equal space */
+            flex: 1;
             padding: 10px;
         }
-        video {
+        video, img {
             border: 1px solid black;
-            width: 100%; /* Make video responsive */
-            height: auto; /* Maintain aspect ratio */
+            width: 100%;
+            height: auto;
         }
         canvas {
-            display: none; /* Hide the canvas */
-        }
-        img {
-            border: 1px solid black;
-            width: 100%; /* Make image responsive */
-            height: auto; /* Maintain aspect ratio */
+            display: none;
         }
     </style>
 </head>
@@ -68,16 +63,21 @@
             });
 
         async function processVideo() {
+            // Resize the canvas to reduce the image size
+            const scaleFactor = 0.5; // Adjust this factor as needed
+            canvas.width = video.videoWidth * scaleFactor;
+            canvas.height = video.videoHeight * scaleFactor;
+
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
 
             // Create a FormData object
             const formData = new FormData();
-            formData.append('file', blob, 'frame.jpg'); // Append the blob as a file
+            formData.append('file', blob, 'frame.jpg');
 
             try {
                 // Send the frame to the FastAPI server
-                const response = await fetch(' https://7cd9-13-229-216-10.ngrok-free.app/process_frame/', {
+                const response = await fetch('https://your-fastapi-url/process_frame/', {
                     method: 'POST',
                     body: formData
                 });
@@ -87,10 +87,8 @@
                 }
 
                 const imageBlob = await response.blob();
-                console.log("Received image blob: ", imageBlob); // Debugging line
-
                 const imageObjectURL = URL.createObjectURL(imageBlob);
-                processedImage.src = imageObjectURL; // Set the src of the img element
+                processedImage.src = imageObjectURL;
 
             } catch (err) {
                 console.error("Error sending frame to server: ", err);
